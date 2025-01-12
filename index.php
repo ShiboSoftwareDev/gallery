@@ -1,6 +1,8 @@
 <?php
+// Check if a theme cookie is set, otherwise default to "light"
 $theme = isset($_COOKIE["theme"]) ? $_COOKIE["theme"] : "light";
 
+// Handle form submission to change the theme
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['theme'])) {
     $theme = $_POST['theme'];
     setcookie("theme", $theme, time() + (86400 * 30), "/");
@@ -16,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['theme'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gallery Landing Page</title>
     <style>
+        /* Set the body styles based on the selected theme */
         body {
             font-family: Arial, sans-serif;
             background-color: <?php echo $theme == "dark" ? "#333" : "#f0f0f0"; ?>;
@@ -57,8 +60,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['theme'])) {
 <body>
     <div class="container">
         <h1>Welcome to the Gallery</h1>
+        <!-- Links to login and signup pages -->
         <a href="login.php">Login</a>
         <a href="signup.php">Sign Up</a>
+        <!-- Form to select and submit the theme -->
         <form method="POST">
             <label for="theme">Select Theme:</label>
             <select name="theme" id="theme" onchange="this.form.submit()">

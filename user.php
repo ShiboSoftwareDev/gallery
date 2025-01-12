@@ -1,17 +1,22 @@
 <?php
+// Include the database connection file and start the session
 include 'db.php';
 session_start();
 
+// Redirect to login page if user is not logged in
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
 
+// Check if a theme cookie is set, otherwise default to "light"
 $theme = isset($_COOKIE["theme"]) ? $_COOKIE["theme"] : "light";
 
 $user_id = $_SESSION['user_id'];
 
+// Handle form submissions
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Handle account deletion
     if (isset($_POST['delete'])) {
         $stmt = $conn->prepare("SELECT filepath FROM images WHERE user_id=?");
         $stmt->bind_param("i", $user_id);
@@ -49,6 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $error = "Error: " . $stmt->error;
         }
         $stmt->close();
+    // Handle email update
     } elseif (isset($_POST['email'])) {
         $email = htmlspecialchars($_POST['email']);
         $stmt = $conn->prepare("UPDATE users SET email=? WHERE id=?");
@@ -59,9 +65,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $error = "Error: " . $stmt->error;
         }
         $stmt->close();
+    // Handle theme change
     } elseif (isset($_POST['theme'])) {
         $theme = $_POST['theme'];
         setcookie("theme", $theme, time() + (86400 * 30), "/");
+    // Handle logout
     } elseif (isset($_POST['logout'])) {
         session_destroy();
         header("Location: login.php");
@@ -69,6 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     }
 }
 
+// Fetch the user's email from the database
 $stmt = $conn->prepare("SELECT email FROM users WHERE id=?");
 $stmt->bind_param("i", $user_id);
 $stmt->execute();
@@ -84,6 +93,7 @@ $stmt->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Page</title>
     <style>
+        /* Set the body styles based on the selected theme */
         body {
             font-family: Arial, sans-serif;
             background-color: <?php echo $theme == 'dark' ? '#333' : '#f0f0f0'; ?>;
@@ -160,15 +170,18 @@ $stmt->close();
         <div class="message <?php echo isset($success) ? 'success' : (isset($error) ? 'error' : ''); ?>">
             <?php echo isset($success) ? $success : (isset($error) ? $error : ''); ?>
         </div>
+        <!-- Form to update email -->
         <form method="POST">
             <div class="input-group">
                 <input type="email" name="email" placeholder="Email" value="<?php echo $user['email']; ?>" required>
                 <button type="submit" style="padding: 10.5px 5px;">Update Email</button>
             </div>
         </form>
+        <!-- Form to delete account -->
         <form method="POST">
             <button type="submit" name="delete" onclick="return confirm('Are you sure you want to delete your account?');">Delete Account</button>
         </form>
+        <!-- Form to logout -->
         <form method="POST">
             <button type="submit" name="logout">Logout</button>
         </form>

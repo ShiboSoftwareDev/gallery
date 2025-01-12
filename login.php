@@ -1,19 +1,24 @@
 <?php
+// Include the database connection file and start the session
 include 'db.php';
 session_start();
 
+// Check if a theme cookie is set, otherwise default to "light"
 $theme = isset($_COOKIE["theme"]) ? $_COOKIE["theme"] : "light";
 
+// Handle form submission for login
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $username = htmlspecialchars($_POST['username']);
     $password = htmlspecialchars($_POST['password']);
 
+    // Prepare and execute the SQL statement to fetch the user
     $stmt = $conn->prepare("SELECT * FROM users WHERE username=?");
     $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
     $user = $result->fetch_assoc();
 
+    // Verify the password and set session variables if valid
     if ($user && password_verify($password, $user['password'])) {
         $_SESSION['user_id'] = $user['id'];
         $_SESSION['logged_in'] = true;
@@ -32,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <style>
+        /* Set the body styles based on the selected theme */
         body {
             font-family: Arial, sans-serif;
             background-color: <?php echo $theme == "dark" ? "#333" : "#f0f0f0"; ?>;
@@ -99,14 +105,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
     <div class="container">
         <h1>Login</h1>
+        <!-- Form to handle login -->
         <form method="POST">
             <input type="text" name="username" placeholder="Username" required>
             <input type="password" name="password" placeholder="Password" required>
             <button type="submit">Login</button>
         </form>
+        <!-- Display error message if login fails -->
         <div class="message <?php echo isset($error) ? 'error' : ''; ?>">
             <?php echo isset($error) ? $error : ''; ?>
         </div>
+        <!-- Buttons to go back to the index page or sign up page -->
         <div class="buttons">
             <a href="index.php"><button>Go Back</button></a>
             <a href="signup.php"><button>Sign Up</button></a>

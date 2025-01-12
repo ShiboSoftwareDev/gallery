@@ -1,19 +1,24 @@
 <?php
+// Start the session
 session_start();
 
+// Redirect to login page if user is not logged in
 if (!isset($_SESSION['logged_in']) || !$_SESSION['logged_in']) {
     header("Location: login.php");
     exit();
 }
 
+// Include the database connection file
 include 'db.php';
 
+// Check if a theme cookie is set, otherwise default to "light"
 $theme = isset($_COOKIE["theme"]) ? $_COOKIE["theme"] : "light";
 
 $user_id = $_SESSION['user_id'];
 $sql = "SELECT * FROM images WHERE user_id=$user_id ORDER BY uploaded_at DESC";
 $result = $conn->query($sql);
 
+// Fetch images from the database and check if they exist
 $images = [];
 while ($row = $result->fetch_assoc()) {
     if (file_exists($row['filepath'])) {
@@ -34,6 +39,7 @@ while ($row = $result->fetch_assoc()) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gallery</title>
     <style>
+        /* Set the body styles based on the selected theme */
         body {
             font-family: Arial, sans-serif;
             background-color: <?php echo $theme == "dark" ? "#333" : "#f0f0f0"; ?>;
@@ -129,6 +135,7 @@ while ($row = $result->fetch_assoc()) {
         let currentIndex = 0;
         const images = Array.from(document.querySelectorAll('.gallery-image'));
 
+        // Handle drag and drop events for file upload
         dropZone.addEventListener('dragover', (e) => {
             e.preventDefault();
             dropZone.classList.add('dragging');
@@ -154,6 +161,7 @@ while ($row = $result->fetch_assoc()) {
             uploadFiles(files);
         });
 
+        // Function to upload files
         function uploadFiles(files) {
             const formData = new FormData();
             for (const file of files) {
@@ -174,6 +182,7 @@ while ($row = $result->fetch_assoc()) {
             });
         }
 
+        // Handle image click to view in fullscreen
         images.forEach((image, index) => {
             image.addEventListener('click', () => {
                 fullscreenImage.src = image.src;
@@ -183,26 +192,31 @@ while ($row = $result->fetch_assoc()) {
             });
         });
 
+        // Handle return button click to exit fullscreen
         returnBtn.addEventListener('click', () => {
             fullscreenContainer.style.display = 'none';
         });
 
+        // Handle delete button click in fullscreen mode
         fullscreenDeleteBtn.addEventListener('click', () => {
             deleteImage(currentImageId);
         });
 
+        // Handle left arrow button click in fullscreen mode
         arrowLeftBtn.addEventListener('click', () => {
             currentIndex = (currentIndex - 1 + images.length) % images.length;
             fullscreenImage.src = images[currentIndex].src;
             currentImageId = images[currentIndex].getAttribute('data-id');
         });
 
+        // Handle right arrow button click in fullscreen mode
         arrowRightBtn.addEventListener('click', () => {
             currentIndex = (currentIndex + 1) % images.length;
             fullscreenImage.src = images[currentIndex].src;
             currentImageId = images[currentIndex].getAttribute('data-id');
         });
 
+        // Handle delete button click for each image
         document.querySelectorAll('.delete-btn').forEach(button => {
             button.addEventListener('click', () => {
                 const imageId = button.getAttribute('data-id');
@@ -210,6 +224,7 @@ while ($row = $result->fetch_assoc()) {
             });
         });
 
+        // Function to delete an image
         function deleteImage(id) {
             fetch('delete_image.php', {
                 method: 'POST',

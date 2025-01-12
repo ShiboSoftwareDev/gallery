@@ -1,12 +1,16 @@
 <?php
+// Include the database connection file
 include 'db.php';
 
+// Check if a theme cookie is set, otherwise default to "light"
 $theme = isset($_COOKIE["theme"]) ? $_COOKIE["theme"] : "light";
 
+// Function to generate a random string for the user directory
 function generateRandomString($length = 10) {
     return substr(str_shuffle(str_repeat($x='0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ', ceil($length/strlen($x)) )),1,$length);
 }
 
+// Handle form submission for sign up
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['theme'])) {
         $theme = $_POST['theme'];
@@ -17,6 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
         $directory = generateRandomString();
 
+        // Prepare and execute the SQL statement to insert the new user
         $stmt = $conn->prepare("INSERT INTO users (username, email, password, directory) VALUES (?, ?, ?, ?)");
         $stmt->bind_param("ssss", $username, $email, $password, $directory);
 
@@ -46,6 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
     <style>
+        /* Set the body styles based on the selected theme */
         body {
             font-family: Arial, sans-serif;
             background-color: <?php echo $theme == "dark" ? "#333" : "#f0f0f0"; ?>;
@@ -113,15 +119,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 <body>
     <div class="container">
         <h1>Sign Up</h1>
+        <!-- Form to handle sign up -->
         <form method="POST">
             <input type="text" name="username" placeholder="Username" required>
             <input type="email" name="email" placeholder="Email" required>
             <input type="password" name="password" placeholder="Password" required>
             <button type="submit">Sign Up</button>
         </form>
+        <!-- Display error message if sign up fails -->
         <div class="message <?php echo isset($error) ? 'error' : ''; ?>">
             <?php echo isset($error) ? $error : ''; ?>
         </div>
+        <!-- Buttons to go back to the index page or login page -->
         <div class="buttons">
             <a href="index.php"><button>Go Back</button></a>
             <a href="login.php"><button>Login</button></a>
